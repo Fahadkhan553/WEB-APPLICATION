@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Photo and Enter Title</title>
+    <title>YouTube Thumbnail Generator</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 50px;
+            background-color: #f9f9f9;
         }
         .container {
-            max-width: 400px;
+            max-width: 800px;
             margin: 0 auto;
             text-align: center;
         }
@@ -23,42 +24,75 @@
         }
         button {
             padding: 10px 20px;
-            background-color: #28a745;
+            background-color: #ff0000; /* YouTube red */
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 5px;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #cc0000;
         }
-        .output {
+        .thumbnail {
             margin-top: 20px;
-        }
-        .output img {
-            max-width: 100%;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
             height: auto;
-            border-radius: 5px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .thumbnail img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .thumbnail .title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 15px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .download-btn {
+            background-color: #28a745; /* Green for download button */
+        }
+        .download-btn:hover {
+            background-color: #218838;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Upload Your Photo and Enter Title</h2>
-    <form id="uploadForm">
-        <input type="text" id="title" placeholder="Enter your title" required>
+    <h1>YouTube Thumbnail Generator</h1>
+    <form id="thumbnailForm">
+        <input type="text" id="title" placeholder="Enter your video title" required>
         <input type="file" id="photo" accept="image/*" required>
-        <button type="submit">Submit</button>
+        <button type="submit">Generate Thumbnail</button>
     </form>
 
-    <div class="output" id="output">
-        <!-- Output will be displayed here -->
+    <div class="thumbnail" id="thumbnailOutput">
+        <!-- Thumbnail will be displayed here -->
     </div>
+
+    <!-- Download Button (initially hidden) -->
+    <button id="downloadBtn" class="download-btn" style="display: none;">Download Thumbnail</button>
 </div>
 
 <script>
-    document.getElementById('uploadForm').addEventListener('submit', function(event) {
+    const thumbnailOutput = document.getElementById('thumbnailOutput');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    document.getElementById('thumbnailForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
         const title = document.getElementById('title').value;
@@ -67,15 +101,53 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                const output = document.getElementById('output');
-                output.innerHTML = `
-                    <h3>${title}</h3>
-                    <img src="${e.target.result}" alt="Uploaded Photo">
+                // Display the thumbnail
+                thumbnailOutput.innerHTML = `
+                    <img src="${e.target.result}" alt="Uploaded Photo" id="thumbnailImage">
+                    <div class="title">${title}</div>
                 `;
+
+                // Show the download button
+                downloadBtn.style.display = 'block';
+
+                // Set up the download functionality
+                downloadBtn.onclick = function() {
+                    downloadThumbnail();
+                };
             };
             reader.readAsDataURL(file);
         }
     });
+
+    function downloadThumbnail() {
+        // Create a canvas element
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas dimensions to match the thumbnail
+        const thumbnailImage = document.getElementById('thumbnailImage');
+        const titleDiv = thumbnailOutput.querySelector('.title');
+
+        canvas.width = thumbnailOutput.offsetWidth;
+        canvas.height = thumbnailOutput.offsetHeight;
+
+        // Draw the image on the canvas
+        ctx.drawImage(thumbnailImage, 0, 0, canvas.width, canvas.height);
+
+        // Draw the title overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, canvas.height - 60, canvas.width, 60); // Semi-transparent black bar
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(titleDiv.innerText, canvas.width / 2, canvas.height - 25); // Centered text
+
+        // Convert canvas to image and trigger download
+        const link = document.createElement('a');
+        link.download = 'youtube_thumbnail.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
 </script>
 
 </body>
