@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Thumbnail Generator</title>
+    <title>Stylish Thumbnail Generator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 50px;
             background-color: #f9f9f9;
         }
@@ -39,28 +39,31 @@
             position: relative;
             width: 100%;
             max-width: 800px;
-            height: auto;
+            height: 450px; /* Fixed height for thumbnail */
             border: 2px solid #ddd;
             border-radius: 10px;
             overflow: hidden;
+            background-size: cover;
+            background-position: center;
         }
-        .thumbnail img {
+        .thumbnail .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: auto;
-            display: block;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
         }
         .thumbnail .title {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: white;
-            font-size: 24px;
+            font-size: 36px;
             font-weight: bold;
-            padding: 15px;
             text-align: center;
-            box-sizing: border-box;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
         }
         .download-btn {
             background-color: #28a745; /* Green for download button */
@@ -73,15 +76,17 @@
 <body>
 
 <div class="container">
-    <h1>YouTube Thumbnail Generator</h1>
+    <h1>Stylish Thumbnail Generator</h1>
     <form id="thumbnailForm">
         <input type="text" id="title" placeholder="Enter your video title" required>
         <input type="file" id="photo" accept="image/*" required>
         <button type="submit">Generate Thumbnail</button>
     </form>
 
+    <!-- Thumbnail Preview -->
     <div class="thumbnail" id="thumbnailOutput">
-        <!-- Thumbnail will be displayed here -->
+        <div class="overlay"></div>
+        <div class="title" id="thumbnailTitle">Your Title Here</div>
     </div>
 
     <!-- Download Button (initially hidden) -->
@@ -90,6 +95,7 @@
 
 <script>
     const thumbnailOutput = document.getElementById('thumbnailOutput');
+    const thumbnailTitle = document.getElementById('thumbnailTitle');
     const downloadBtn = document.getElementById('downloadBtn');
 
     document.getElementById('thumbnailForm').addEventListener('submit', function(event) {
@@ -101,11 +107,11 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                // Display the thumbnail
-                thumbnailOutput.innerHTML = `
-                    <img src="${e.target.result}" alt="Uploaded Photo" id="thumbnailImage">
-                    <div class="title">${title}</div>
-                `;
+                // Set the background image of the thumbnail
+                thumbnailOutput.style.backgroundImage = `url('${e.target.result}')`;
+
+                // Set the title
+                thumbnailTitle.innerText = title;
 
                 // Show the download button
                 downloadBtn.style.display = 'block';
@@ -125,28 +131,36 @@
         const ctx = canvas.getContext('2d');
 
         // Set canvas dimensions to match the thumbnail
-        const thumbnailImage = document.getElementById('thumbnailImage');
-        const titleDiv = thumbnailOutput.querySelector('.title');
-
         canvas.width = thumbnailOutput.offsetWidth;
         canvas.height = thumbnailOutput.offsetHeight;
 
-        // Draw the image on the canvas
-        ctx.drawImage(thumbnailImage, 0, 0, canvas.width, canvas.height);
+        // Draw the background image
+        const background = new Image();
+        background.src = thumbnailOutput.style.backgroundImage.slice(4, -1).replace(/"/g, "");
+        background.onload = function() {
+            ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-        // Draw the title overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, canvas.height - 60, canvas.width, 60); // Semi-transparent black bar
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 24px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(titleDiv.innerText, canvas.width / 2, canvas.height - 25); // Centered text
+            // Draw the overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Convert canvas to image and trigger download
-        const link = document.createElement('a');
-        link.download = 'youtube_thumbnail.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
+            // Draw the title
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.shadowBlur = 5;
+            ctx.fillText(thumbnailTitle.innerText, canvas.width / 2, canvas.height / 2);
+
+            // Convert canvas to image and trigger download
+            const link = document.createElement('a');
+            link.download = 'stylish_thumbnail.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
     }
 </script>
 
