@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automatic Stylish Thumbnail Generator</title>
+    <title>WhatsApp Message Sender</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -11,11 +11,20 @@
             background-color: #f9f9f9;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
             text-align: center;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"], input[type="file"] {
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="number"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -24,143 +33,57 @@
         }
         button {
             padding: 10px 20px;
-            background-color: #ff0000; /* YouTube red */
+            background-color: #25D366; /* WhatsApp green */
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 5px;
+            margin: 10px 0;
         }
         button:hover {
-            background-color: #cc0000;
+            background-color: #128C7E;
         }
-        .thumbnail {
+        .output {
             margin-top: 20px;
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            height: 450px; /* Fixed height for thumbnail */
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            overflow: hidden;
-            background-size: cover;
-            background-position: center;
-        }
-        .thumbnail .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
-        }
-        .thumbnail .title {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 36px;
-            font-weight: bold;
-            text-align: center;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
-        }
-        .download-btn {
-            background-color: #28a745; /* Green for download button */
-        }
-        .download-btn:hover {
-            background-color: #218838;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Automatic Stylish Thumbnail Generator</h1>
-    <form id="thumbnailForm">
-        <input type="text" id="title" placeholder="Enter your video title" required>
-        <input type="file" id="photo" accept="image/*" required>
-        <button type="submit">Generate Thumbnail</button>
-    </form>
+    <h1>Interview and WhatsApp Message Sender</h1>
+    <p>Enter your WhatsApp number and the amount of messages you want to send:</p>
+    
+    <input type="text" id="whatsappNumber" placeholder="Enter your WhatsApp number" required>
+    <input type="number" id="messageCount" placeholder="Enter the number of messages" required>
+    <button onclick="sendMessages()">Send Messages</button>
 
-    <!-- Thumbnail Preview -->
-    <div class="thumbnail" id="thumbnailOutput">
-        <div class="overlay"></div>
-        <div class="title" id="thumbnailTitle">Your Title Here</div>
-    </div>
-
-    <!-- Download Button (initially hidden) -->
-    <button id="downloadBtn" class="download-btn" style="display: none;">Download Thumbnail</button>
+    <div class="output" id="output"></div>
 </div>
 
 <script>
-    const thumbnailOutput = document.getElementById('thumbnailOutput');
-    const thumbnailTitle = document.getElementById('thumbnailTitle');
-    const downloadBtn = document.getElementById('downloadBtn');
+    function sendMessages() {
+        const whatsappNumber = document.getElementById('whatsappNumber').value;
+        const messageCount = document.getElementById('messageCount').value;
+        const output = document.getElementById('output');
 
-    document.getElementById('thumbnailForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-
-        const title = document.getElementById('title').value;
-        const file = document.getElementById('photo').files[0];
-
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Set the background image of the thumbnail
-                thumbnailOutput.style.backgroundImage = `url('${e.target.result}')`;
-
-                // Set the title
-                thumbnailTitle.innerText = title;
-
-                // Show the download button
-                downloadBtn.style.display = 'block';
-
-                // Set up the download functionality
-                downloadBtn.onclick = function() {
-                    downloadThumbnail();
-                };
-            };
-            reader.readAsDataURL(file);
+        if (!whatsappNumber || !messageCount) {
+            output.innerText = "Please fill in all fields.";
+            return;
         }
-    });
 
-    function downloadThumbnail() {
-        // Create a canvas element
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const amount = messageCount * 1; // Assuming ₹1 per message
+        const message = `Hello, this is message number ${messageCount}. Total amount: ₹${amount}.`;
 
-        // Set canvas dimensions to match the thumbnail
-        canvas.width = thumbnailOutput.offsetWidth;
-        canvas.height = thumbnailOutput.offsetHeight;
+        // Generate WhatsApp link
+        const whatsappLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-        // Draw the background image
-        const background = new Image();
-        background.src = thumbnailOutput.style.backgroundImage.slice(4, -1).replace(/"/g, "");
-        background.onload = function() {
-            ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+        // Open WhatsApp link in a new tab
+        window.open(whatsappLink, '_blank');
 
-            // Draw the overlay
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw the title
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 36px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
-            ctx.shadowBlur = 5;
-            ctx.fillText(thumbnailTitle.innerText, canvas.width / 2, canvas.height / 2);
-
-            // Convert canvas to image and trigger download
-            const link = document.createElement('a');
-            link.download = 'stylish_thumbnail.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        };
+        // Show success message
+        output.innerText = `Sending ${messageCount} messages to ${whatsappNumber}. Total amount: ₹${amount}.`;
     }
 </script>
 
